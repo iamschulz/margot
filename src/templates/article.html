@@ -1,0 +1,11 @@
+{{define "article"}}
+<!DOCTYPE html>
+{{template "head" .}}
+<body>
+
+    {{template "header" .}}
+    {{template "mainNavigation" .}}
+    
+    {{.Body}}
+</body>
+{{end}}

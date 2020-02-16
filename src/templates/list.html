@@ -1,0 +1,20 @@
+{{define "list"}}
+<!DOCTYPE html>
+{{template "head" .}}
+<body>
+
+    {{template "header" .}}
+    {{template "mainNavigation" .}}
+
+    <h2>Cat: {{printf "%s" .Title}}</h2>
+    {{.Body}}
+    <hr>
+    <ul>
+        {{range $article := .Articles}}
+            <li>
+                <a href="{{$article.URL}}">{{$article.Title}}</a>
+            </li>
+        {{end}}
+    </ul>
+</body>
+{{end}}
