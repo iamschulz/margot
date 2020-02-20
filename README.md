@@ -1,6 +1,10 @@
 # Margot is a **Mar**kdown **Go** **T**hing
 It produces a website from some Markdown files.
 
+## Install
+- clone the repo
+- `go run *.go`
+
 ## How to use
 ### Structure and adding content
 A Margot item is usually one of the following three types:
