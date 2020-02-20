@@ -1,10 +1,12 @@
-{{define "error"}}
+{{define "page"}}
 <!DOCTYPE html>
 {{template "head" .}}
 <body>
 
     {{template "header" .}}
     {{template "mainNavigation" .}}
+
+    <h2>CustomPage: {{printf "%s" .Title}}</h2>
     {{.Body}}
 </body>
 {{end}}

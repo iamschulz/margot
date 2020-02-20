@@ -28,11 +28,11 @@ func getSiteConfig() (config *Config) {
 
 // Create an Index of all contents
 // Run this at startup and refer to it on requests
-func createIndex() (index *Index) {
+func createIndex(siteConfig *Config) (index *Index) {
 	searchDir := "src/markdown"
 	categoryList := make(map[string]Category)
 	articleList := make(map[string]Article)
-	pageList := make(map[string]Page)
+	customPageList := make(map[string]CustomPage)
 
 	filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
 		if path == searchDir {
@@ -46,7 +46,7 @@ func createIndex() (index *Index) {
 			switch {
 			// if category
 			case pathArr[0] == "articles" && len(pathArr) == 2:
-				categoryList[fileInfo.Name()] = createCategory(path)
+				categoryList[fileInfo.Name()] = createCategory(path, siteConfig)
 
 			// if article
 			case pathArr[0] == "articles" && len(pathArr) == 3:
@@ -55,9 +55,9 @@ func createIndex() (index *Index) {
 				articleList[fileInfo.Name()] = article
 				registerArticleInCategory(article, categoryList[catName])
 
-			// if page
-			case pathArr[0] == "pages" && len(pathArr) == 2:
-				pageList[fileInfo.Name()] = createPage(path)
+			// if customPage
+			case pathArr[0] == "customPages" && len(pathArr) == 2:
+				customPageList[fileInfo.Name()] = createCustomPage(path)
 			}
 		}
 
@@ -65,9 +65,9 @@ func createIndex() (index *Index) {
 	})
 
 	return &Index{
-		Categories: categoryList,
-		Pages:      pageList,
-		Articles:   articleList,
+		Categories:  categoryList,
+		CustomPages: customPageList,
+		Articles:    articleList,
 	}
 }
 
@@ -86,51 +86,52 @@ func getPartialList() (allPartials []string) {
 	return
 }
 
-func requestHandler(index *Index, config *Config, templateList []string) http.Handler {
+func requestHandler(index *Index, siteconfig *Config, templateList []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		var pageType string
 		var viewData interface{}
-		var templateFile string
+		var templateName string
 		route := r.URL.Path[len("/"):]
+		path := strings.Split(route, "/")
 
 		if r.URL.Path == "/" {
-			pageType = config.FrontPageType
-			route = config.FrontPageName
+			pageType = siteconfig.FrontPageType
+			route = siteconfig.FrontPageName
 			// needs error handling
 		}
-		if _, ok := index.Categories[route]; ok {
+		if _, ok := index.Categories[path[0]]; ok {
 			pageType = "category"
-		} else if _, ok := index.Pages[route]; ok {
-			pageType = "page"
+		} else if _, ok := index.CustomPages[route]; ok {
+			pageType = "customPage"
 		} else if _, ok := index.Articles[route]; ok {
 			pageType = "article"
 		}
 
 		switch pageType {
 		case "category":
-			templateFile = index.Categories[route].Template
-			viewData = index.Categories[route]
-		case "page":
-			templateFile = index.Pages[route].Template
-			viewData = index.Pages[route]
+			templateName = index.Categories[path[0]].Template
+			viewData = index.Categories[path[0]]
+			fmt.Println(index.Categories[path[0]]) // todo: get paged category
+		case "customPage":
+			templateName = index.CustomPages[route].Template
+			viewData = index.CustomPages[route]
 		case "article":
-			templateFile = index.Articles[route].Template
+			templateName = index.Articles[route].Template
 			viewData = index.Articles[route]
 		default:
-			templateFile = "error.html"
-			viewData = Page{
+			templateName = "error"
+			viewData = CustomPage{
 				Name:     "Error",
 				Path:     "",
-				Template: "error.html",
+				Template: "error",
 				Title:    "Error",
-				Body:     template.HTML([]byte("Oh no :(")),
+				Body:     template.HTML([]byte("")),
 			}
 		}
 
 		if err == nil {
-			templateList = append(getPartialList(), "./src/templates/"+templateFile)
-			templateName := strings.Split(templateFile, ".html")[0] // strip ".html"
+			templateList = append(getPartialList(), "./src/templates/pageTypes/"+templateName+".html")
 			renderTemplate(w, templateList, templateName, viewData)
 		} else {
 			fmt.Println("an error occured")
@@ -157,7 +158,7 @@ func readMarkdown(mdPath string) (mdString string, err error) {
 
 func main() {
 	siteConfig := getSiteConfig()
-	siteIndex := createIndex()
+	siteIndex := createIndex(siteConfig)
 	partialList := getPartialList()
 
 	http.Handle("/", requestHandler(siteIndex, siteConfig, partialList))
@@ -167,11 +168,12 @@ func main() {
 /*
 todo:
 - create pagination for cats
-- add template type config for pages and articles
+- add template type config for customPages and articles
 - add error handling
-- create navigation from cats and pages
+- create navigation from cats and customPages
 - use siteConfig
 - add rss feed
 - add xml sitemap
 - add updateIndex method
+- add tests
 */

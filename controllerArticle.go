@@ -36,7 +36,7 @@ func createArticle(path string) (article Article) {
 	return Article{
 		Name:      name,
 		Path:      path,
-		Template:  "article.html",
+		Template:  "article",
 		Canonical: canonical,
 		Title:     title,
 		Body:      template.HTML([]byte(htmlString)),

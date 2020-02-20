@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func createPage(path string) (page Page) {
-	var pageData PageData
+func createCustomPage(path string) (customPage CustomPage) {
+	var customPageData CustomPageData
 	pathArr := strings.Split(path, "/")
 	name := pathArr[len(pathArr)-1]
 	title := name
@@ -27,14 +27,14 @@ func createPage(path string) (page Page) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		json.Unmarshal([]byte(configJSON), &pageData)
-		title = pageData.Title
+		json.Unmarshal([]byte(configJSON), &customPageData)
+		title = customPageData.Title
 	}
 
-	return Page{
+	return CustomPage{
 		Name:     name,
 		Path:     path,
-		Template: "page.html",
+		Template: "customPage",
 		Title:    title,
 		Body:     template.HTML([]byte(htmlString)),
 	}
