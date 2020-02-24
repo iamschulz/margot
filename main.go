@@ -53,7 +53,7 @@ func createIndex(siteConfig *Config) (index *Index) {
 				article := createArticle(path)
 				catName := pathArr[1]
 				articleList[fileInfo.Name()] = article
-				registerArticleInCategory(article, categoryList[catName])
+				registerArticleInCategory(siteConfig, article, categoryList[catName])
 
 			// if customPage
 			case pathArr[0] == "customPages" && len(pathArr) == 2:
@@ -86,7 +86,7 @@ func getPartialList() (allPartials []string) {
 	return
 }
 
-func requestHandler(index *Index, siteconfig *Config, templateList []string) http.Handler {
+func requestHandler(index *Index, siteConfig *Config, templateList []string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
 		var pageType string
@@ -96,8 +96,8 @@ func requestHandler(index *Index, siteconfig *Config, templateList []string) htt
 		path := strings.Split(route, "/")
 
 		if r.URL.Path == "/" {
-			pageType = siteconfig.FrontPageType
-			route = siteconfig.FrontPageName
+			pageType = siteConfig.FrontPageType
+			route = siteConfig.FrontPageName
 			// needs error handling
 		}
 		if _, ok := index.Categories[path[0]]; ok {
@@ -112,7 +112,6 @@ func requestHandler(index *Index, siteconfig *Config, templateList []string) htt
 		case "category":
 			templateName = index.Categories[path[0]].Template
 			viewData = index.Categories[path[0]]
-			fmt.Println(index.Categories[path[0]]) // todo: get paged category
 		case "customPage":
 			templateName = index.CustomPages[route].Template
 			viewData = index.CustomPages[route]

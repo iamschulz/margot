@@ -43,8 +43,19 @@ func createArticle(path string) (article Article) {
 	}
 }
 
-func registerArticleInCategory(article Article, category Category) {
+func registerArticleInCategory(siteConfig *Config, article Article, category Category) {
 	articleTitle := article.Title
 	articleURL := "/" + article.Name
-	category.Articles[article.Name] = CategoryArticle{Title: articleTitle, URL: articleURL}
+	page := len(category.Articles)/siteConfig.PaginationSize + 1
+
+	category.Articles[article.Name] = CategoryArticle{Title: articleTitle, URL: articleURL, Page: page}
 }
+
+/*
+	// if curent page has > 10 articles
+	if len(category.Pages[len(category.Pages)-1].Articles) >= 10 {
+		category.Pages = append(category.Pages, CategoryPage{make(map[string]CategoryArticle)})
+	}
+	currentPage := category.Pages[len(category.Pages)-1]
+	currentPage.Articles[article.Name] = CategoryArticle{Title: articleTitle, URL: articleURL}
+*/

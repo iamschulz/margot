@@ -30,19 +30,11 @@ type Category struct {
 	Body       template.HTML
 }
 
-type PagedCategory struct {
-	Name     string
-	Path     string
-	Template string
-	Title    string
-	Articles map[string]CategoryArticle
-	Body     template.HTML
-}
-
 // CategoryArticle struct contains information about an Article in a Category
 type CategoryArticle struct {
 	Title string
 	URL   string
+	Page  int
 }
 
 // CustomPage struct contains page information
